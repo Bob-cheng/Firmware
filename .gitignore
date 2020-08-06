@@ -34,6 +34,7 @@ tags
 Firmware.zip
 *.generated.h
 .vagrant
+.vscode
 *.pretty
 xcode
 rootfs/
