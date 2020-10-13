@@ -1,8 +1,14 @@
 # 100Hz, 250Hz maximum
 # vehicle_angular_velocity, 10
+
 # 100Hz, 250Hz maximum
 # vehicle_attitude, 10
+
 # 100Hz, 125Hz maximum
 # vehicle_local_position, 10
+
 # 100Hz, 250Hz maximum
 # actuator_outputs, 10
+
+# 100Hz
+clog_states

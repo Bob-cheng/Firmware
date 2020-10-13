@@ -86,7 +86,9 @@
         "gitlens.advanced.telemetry.enabled": false,
         "files.associations": {
                 "*.jinja": "jinja",
-                "cstdlib": "cpp"
+                "cstdlib": "cpp",
+                "*.tcc": "cpp",
+                "thread": "cpp"
         },
         "search.exclude": {
                 "build/**": true

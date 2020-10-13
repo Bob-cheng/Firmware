@@ -42,6 +42,7 @@
 #include <uORB/topics/vehicle_attitude.h>
 #include <uORB/topics/vehicle_local_position.h>
 #include <uORB/topics/actuator_outputs.h>
+#include <uORB/topics/clog_states.h>
 
 
 int LogCompressor::print_status()
@@ -140,7 +141,10 @@ LogCompressor::LogCompressor(int example_param, bool example_flag)
 
 void LogCompressor::run()
 {
-	// Example: run the loop synchronized to the sensor_combined topic publication
+	struct clog_states_s clog_states_out;
+	memset(&clog_states_out, 0, sizeof(clog_states_out));
+	orb_advert_t clog_states_pub = orb_advertise(ORB_ID(clog_states), &clog_states_out);
+
 	int angular_velocity_sub 	= orb_subscribe(ORB_ID(vehicle_angular_velocity));
 	int attitude_sub 		= orb_subscribe(ORB_ID(vehicle_attitude));
 	int local_position_sub 		= orb_subscribe(ORB_ID(vehicle_local_position));
@@ -154,7 +158,9 @@ void LogCompressor::run()
 
 	// initialize parameters
 	parameters_update(true);
-	// PX4_INFO("start info");
+	PX4_INFO("start log compressor");
+
+	float actuator_norm[4] = {0};
 	while (!should_exit()) {
 
 		// wait for up to 1000ms for data
@@ -179,7 +185,22 @@ void LogCompressor::run()
 			orb_copy(ORB_ID(vehicle_attitude), 		attitude_sub, 		&attitude);
 			orb_copy(ORB_ID(vehicle_local_position), 	local_position_sub, 	&local_position);
 			orb_copy(ORB_ID(actuator_outputs), 		actuator_outputs_sub, 	&actuator);
-			//TODO: add log information
+
+			clog_states_out.timestamp = actuator.timestamp;
+			clog_states_out.vx = local_position.vx;
+			clog_states_out.vy = local_position.vy;
+			clog_states_out.vz = local_position.vz;
+			clog_states_out.x = local_position.x;
+			clog_states_out.y = local_position.y;
+			clog_states_out.z = local_position.z;
+			actuator_norm[0] = pwm_normalize(actuator.output[0]);
+			actuator_norm[1] = pwm_normalize(actuator.output[1]);
+			actuator_norm[2] = pwm_normalize(actuator.output[2]);
+			actuator_norm[3] = pwm_normalize(actuator.output[3]);
+			memcpy(clog_states_out.actuators, 	actuator_norm, 		sizeof(actuator_norm));
+			memcpy(clog_states_out.q, 		attitude.q, 		sizeof(attitude.q));
+			memcpy(clog_states_out.gyroxyz, 	angular_velocity.xyz, 	sizeof(angular_velocity.xyz));
+			orb_publish(ORB_ID(clog_states), clog_states_pub, &clog_states_out);
 		}
 		parameters_update();
 		usleep(10000); //10 ms, 100 Hz
@@ -189,6 +210,16 @@ void LogCompressor::run()
 	orb_unsubscribe(attitude_sub);
 	orb_unsubscribe(local_position_sub);
 	orb_unsubscribe(actuator_outputs_sub);
+}
+
+float LogCompressor::pwm_normalize(float pwm){
+	float out = (pwm-1000)/1000;
+	if(out < 0){
+		out = 0;
+	}else if(out > 1){
+		out = 1;
+	}
+	return out;
 }
 
 void LogCompressor::parameters_update(bool force)

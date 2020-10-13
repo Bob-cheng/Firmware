@@ -66,6 +66,8 @@ public:
 	/** @see ModuleBase::print_status() */
 	int print_status() override;
 
+	float pwm_normalize(float pwm);
+
 private:
 
 	/**

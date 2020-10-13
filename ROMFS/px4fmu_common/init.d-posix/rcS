@@ -253,3 +253,5 @@ sh etc/init.d/rc.logging
 
 mavlink boot_complete
 replay trystart
+
+log_compressor start
