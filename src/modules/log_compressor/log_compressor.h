@@ -38,6 +38,11 @@
 #include <uORB/Subscription.hpp>
 #include <uORB/topics/parameter_update.h>
 
+#include <uORB/topics/vehicle_angular_velocity.h>
+#include <uORB/topics/vehicle_attitude.h>
+#include <uORB/topics/vehicle_local_position.h>
+#include <uORB/topics/actuator_outputs.h>
+
 extern "C" __EXPORT int log_compressor_main(int argc, char *argv[]);
 
 
@@ -68,6 +73,24 @@ public:
 
 	float pwm_normalize(float pwm);
 
+	void quadrotor_m(float, const float x[12], const float u[4], float a, float
+                 b, float c, float d, float m, float I_x, float I_y, float
+                 I_z, float K_T, float K_Q, float dx[12], float y[12]);
+
+	void transfromNED2ENU(float x[12]);
+	void updateState(float x[12], float dx[12], float dt);
+
+	bool is_log(float error, float error_max, int last_log_loop, int current_loop, int max_freq);
+	float transformInput(float actuator_val);
+	float wrap_2PI(float yaw);
+	void compressionLog();
+
+	struct vehicle_angular_velocity_s angular_velocity{};
+	struct vehicle_attitude_s attitude{};
+	struct vehicle_local_position_s local_position{};
+	struct actuator_outputs_s actuator{};
+
+
 private:
 
 	/**
@@ -85,6 +108,8 @@ private:
 
 	// Subscriptions
 	uORB::Subscription	_parameter_update_sub{ORB_ID(parameter_update)};
+
+
 
 };
 

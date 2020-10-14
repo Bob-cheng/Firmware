@@ -88,7 +88,8 @@
                 "*.jinja": "jinja",
                 "cstdlib": "cpp",
                 "*.tcc": "cpp",
-                "thread": "cpp"
+                "thread": "cpp",
+                "cmath": "cpp"
         },
         "search.exclude": {
                 "build/**": true
