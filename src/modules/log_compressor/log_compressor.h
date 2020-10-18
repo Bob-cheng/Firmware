@@ -42,6 +42,7 @@
 #include <uORB/topics/vehicle_attitude.h>
 #include <uORB/topics/vehicle_local_position.h>
 #include <uORB/topics/actuator_outputs.h>
+#include <uORB/topics/clog_devia_gt.h>
 
 extern "C" __EXPORT int log_compressor_main(int argc, char *argv[]);
 
@@ -89,7 +90,8 @@ public:
 	struct vehicle_attitude_s attitude{};
 	struct vehicle_local_position_s local_position{};
 	struct actuator_outputs_s actuator{};
-
+	struct clog_devia_gt_s clog_devia_gt_out{};
+	orb_advert_t clog_devia_gt_pub;
 
 private:
 

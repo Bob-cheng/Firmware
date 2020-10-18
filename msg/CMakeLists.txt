@@ -43,6 +43,7 @@ set(msg_files
 	camera_capture.msg
 	camera_trigger.msg
 	clog_states.msg
+	clog_devia_gt.msg
 	collision_report.msg
 	collision_constraints.msg
 	commander_state.msg

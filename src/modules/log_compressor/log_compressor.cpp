@@ -139,6 +139,7 @@ LogCompressor *LogCompressor::instantiate(int argc, char *argv[])
 LogCompressor::LogCompressor(int example_param, bool example_flag)
 	: ModuleParams(nullptr)
 {
+	clog_devia_gt_pub = orb_advertise(ORB_ID(clog_devia_gt), &clog_devia_gt_out);
 }
 
 void LogCompressor::run()
@@ -199,7 +200,7 @@ void LogCompressor::run()
 			memcpy(clog_states_out.q, 		attitude.q, 		sizeof(attitude.q));
 			memcpy(clog_states_out.gyroxyz, 	angular_velocity.xyz, 	sizeof(angular_velocity.xyz));
 			orb_publish(ORB_ID(clog_states), clog_states_pub, &clog_states_out);
-
+			//Main compress strategy
 			compressionLog();
 		}
 
@@ -247,9 +248,9 @@ void LogCompressor::compressionLog()
 	static float K_T = 7.21077;
 	static float K_Q = 0.10472;
 	static uint64_t last_time_us = 0;
-	static int K_stone = 400;
+	static int K_stone = 100;
 	static int loopCount = -1;
-	static int max_freq = 400;
+	static int max_freq = 100;
 
 	static float error_thre[12] = {0.139337476507485, 0.124396874563097, 0.0147272946765464,
 				       0.00372856443706101, 0.00390555433968539, 0.00589400093019354,
@@ -257,6 +258,8 @@ void LogCompressor::compressionLog()
 				       0.00822311394035166, 0.00840920644259765, 0.0101633185357302
 				      };
 	static int last_log_loop[12] = {0};
+
+
 
 	uint64_t time_us = actuator.timestamp;
 
@@ -307,6 +310,11 @@ void LogCompressor::compressionLog()
 			//need to log
 			//write Clog Data
 			last_log_loop[i] = loopCount;
+
+			clog_devia_gt_out.timestamp = time_us;
+			clog_devia_gt_out.state_no = i +1;
+			clog_devia_gt_out.value = (float)true_x[i];
+			orb_publish(ORB_ID(clog_devia_gt), clog_devia_gt_pub, &clog_devia_gt_out);
 		}
 	}
 
